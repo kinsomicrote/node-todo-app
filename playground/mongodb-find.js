@@ -28,12 +28,12 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
   //   console.log('Unable to find users', err)
   // })
 
-  db.collection('Users').find({name: 'Henry Ford'}).toArray().then((docs) => {
-    console.log('Users')
-    console.log(JSON.stringify(docs, undefined, 2))
-  }, (err) => {
-    console.log('Unable to find users', err)
-  })
+  // db.collection('Users').find({name: 'Henry Ford'}).toArray().then((docs) => {
+  //   console.log('Users')
+  //   console.log(JSON.stringify(docs, undefined, 2))
+  // }, (err) => {
+  //   console.log('Unable to find users', err)
+  // })
 
   // db.close()
 })
