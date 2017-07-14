@@ -10,7 +10,9 @@ const todos = [{
   text: "First test todo"
 }, {
   _id: new ObjectId(),
-  text: "Second test todo"
+  text: "Second test todo",
+  completed: true,
+  completedAt: 333
 }]
 
 beforeEach((done) => {
@@ -107,27 +109,73 @@ describe('GET /todos/:id', () => {
 
 describe('DELETE /todos/:id', () => {
   it('should delete a todo', (done) => {
+    let hexId = todos[0]._id.toHexString()
     request(app)
-      .get(`/todos/${todos[0]._id.toHexString()}`)
+      .delete(`/todos/${hexId}`)
       .expect(200)
       .expect((res) => {
-        expect(res.body.todo.text).toBe(todos[0].text)
+        expect(res.body.todo._id).toBe(hexId)
       })
-      .end(done)
+      .end((err, res) => {
+        if (err) {
+          return done(err)
+        }
+      })
+
+      Todo.findById(hexId).then((todo) => {
+        expect(todo.hexId).toNotExist()
+        done()
+      }).catch((e) => done(e))
   })
 
   it('should return 404 if todo is not found', (done) => {
     let hexId = new ObjectId().toHexString()
     request(app)
-      .get(`/todos/${todos/hexId}`)
+      .delete(`/todos/${todos/hexId}`)
       .expect(404)
       .end(done)
   })
 
   it('should return 404 for non-object ids', (done) => {
     request(app)
-      .get('/todos/123abc')
+      .delete('/todos/123abc')
       .expect(404)
+      .end(done)
+  })
+})
+
+describe('PATCH /todos/:id', () => {
+  it('should update the todo', (done) => {
+    let text = 'Test todo text'
+    let completed = true
+    let hexId = todos[0]._id.toHexString()
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({text, completed})
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(text)
+        expect(res.body.todo.completed).toBe(true)
+        expect(res.body.todo.completedAt).toBeA('number')
+      })
+      .end(done)
+  })
+
+  it('should clear completedAt when todo is not completed', (done) => {
+    let text = 'Test todo second test'
+    let completed = false
+    let hexId = todos[1]._id.toHexString()
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({text, completed})
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(text)
+        expect(res.body.todo.completed).toBe(false)
+        expect(res.body.todo.completedAt).toNotExist()
+      })
       .end(done)
   })
 })
